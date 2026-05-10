@@ -224,6 +224,8 @@
     };
 
     const app = document.getElementById('app');
+    const resultCodeMap = { ISTJ:'A', ISFJ:'B', INFJ:'C', INTJ:'D', ISTP:'E', ISFP:'F', INFP:'G', INTP:'H', ESTP:'I', ESFP:'J', ENFP:'K', ENTP:'L', ESTJ:'M', ESFJ:'N', ENFJ:'O', ENTJ:'P' };
+    const codeResultMap = Object.fromEntries(Object.entries(resultCodeMap).map(([k,v]) => [v,k]));
     const state = {
       screen: 'intro',
       current: 0,
@@ -251,7 +253,9 @@
 
     function buildResultUrl(mbti) {
       const url = new URL(window.location.href);
-      url.searchParams.set('result', mbti);
+      const code = resultCodeMap[mbti] || 'A';
+      url.searchParams.set('r', code);
+      url.searchParams.delete('result');
       return url.toString();
     }
 
@@ -261,6 +265,7 @@
       } else {
         const url = new URL(window.location.href);
         url.searchParams.delete('result');
+        url.searchParams.delete('r');
         history.replaceState({}, '', url.toString());
       }
     }
@@ -484,8 +489,12 @@
 
     (function boot() {
       const params = new URLSearchParams(window.location.search);
+      const shortCode = params.get('r');
       const result = params.get('result');
-      if (result && mbtiData[result]) {
+      if (shortCode && codeResultMap[shortCode]) {
+        state.resultMbti = codeResultMap[shortCode];
+        state.screen = 'result';
+      } else if (result && mbtiData[result]) {
         state.resultMbti = result;
         state.screen = 'result';
       }
